@@ -5,8 +5,9 @@ Olá, candidato(a)!
 Seja bem-vindo(a) ao desafio individual para a equipe de Robótica da EDROM. Este desafio foi projetado para avaliar suas habilidades de resolução de problemas, sua lógica de programação e seu conhecimento em algoritmos fundamentais para a robótica.
 
 Caso tenha dúvidas sobre qualquer coisa, envie uma mensagem em algum dos seguintes canais:
-- E-mail: edromufu@gmail.com
+- E-mail: victor.vasconcelos0010@gmail.com
 - E-mail: pedrohperescode@gmail.com
+- Grupo do Whatsapp
 
 
 ## O Desafio
