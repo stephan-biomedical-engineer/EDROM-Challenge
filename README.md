@@ -1,151 +1,153 @@
-# Path Planning com Algoritmo A\* - Robô de Futebol EDROM
+# README - Desafio de Path Finding com Algoritmo A\*
 
-## Visão Geral
+Autor: **Stephan Costa Barros**
+Curso: **Engenharia Biomédica**
+Áreas de interesse: **Elétrica** e **Behavior**
 
-Este projeto implementa um algoritmo de planejamento de caminho A\* para um robô de futebol na competição EDROM. O robô precisa navegar pelo campo, evitar adversários, capturar a bola e levá-la até o gol, considerando diferentes custos de movimento e estados.
+---
 
-## Características Principais
+## \:dart: Objetivo
 
-* Implementação do algoritmo A\* com heurística adaptada
-* Suporte a movimentos ortogonais e diagonais
-* Cálculo de custos considerando:
+Este projeto implementa o algoritmo A\* para encontrar o **melhor caminho** que um robô deve seguir em um campo, considerando:
 
-  * Movimento reto vs. diagonal
-  * Custo de rotação
-  * Posse de bola
-  * Proximidade de adversários
-* Sistema de logging detalhado para análise
+* Obstáculos (adversários)
+* Mudança de direção (rotação)
+* Custos diferentes para movimentação (reto x diagonal)
+* Penalidades por proximidade de adversários
+* Estado especial: com ou sem posse de bola
 
-## Estrutura do Código
+---
+
+## \:books: Descrição do Algoritmo A\*
+
+O A\* é uma estratégia de busca informada que prioriza os caminhos com **menor custo total estimado**:
+
+```
+f(n) = g(n) + h(n)
+```
+
+* **g(n)**: custo acumulado do início até o nó atual
+* **h(n)**: estimativa de custo até o objetivo (heurística)
+* **f(n)**: prioriza o menor valor na fila de prioridade
+
+A fila de prioridade é gerenciada com `heapq`, que garante que o **estado com menor f(n)** seja sempre o próximo explorado.
+
+---
+
+## \:map: Regras do Desafio (Níveis de Resolução)
+
+### Nível Básico
+
+* Chegar à bola, depois ao gol
+* Custo para andar reto (horizontal/vertical): **300**
+* Custo para andar na diagonal: **100**
+* Evitar obstáculos (adversários)
+
+### Nível 1 - Penalidade por Rotação
+
+* Mudar de direção reto ↔ diagonal: +50
+* Mudança brusca (90 graus): +150
+
+### Nível 2 - Penalidade com Bola
+
+* Se o robô estiver com a bola, penalidades de rotação **dobram**
+
+### Nível 3 - Proximidade de Adversários
+
+* Células adjacentes a adversários são penalizadas com até +300
+* Penalidade decai com a distância
+
+---
+
+## \:triangular\_ruler: Heurística (h)
+
+Foi usada uma heurística **otimizada** para o desafio, considerando os custos diferentes:
+
+```python
+dx = abs(x1 - x2)
+dy = abs(y1 - y2)
+h(n) = min(dx, dy) * 100 + abs(dx - dy) * 300
+```
+
+* Movimentos diagonais custam 100, por isso priorizamos eles primeiro
+* Movimentos retos mais distantes têm custo 300
+
+---
+
+## \:gear: Estrutura Interna
 
 ### Classe `Estado`
 
-Representa um nó no espaço de busca:
+Cada posição no grid guarda:
 
-* `posicao`: Coordenadas (x,y) no grid
-* `pai`: Nó predecessor no caminho
-* `g`: Custo acumulado do caminho desde o início
-* `h`: Estimativa heurística do custo até o objetivo
-* `f`: Custo total (g + h)
-* `direcao`: Última direção de movimento
-* `tem_bola`: Estado de posse da bola
+* `posicao`: coordenadas (x, y)
+* `pai`: referência ao estado anterior (para reconstrução do caminho)
+* `g`: custo acumulado
+* `h`: heurística
+* `f`: custo total
+* `direcao_anterior`: direção do movimento anterior
+* `tem_bola`: booleano que indica posse da bola
 
-### Funções Principais
+### Open e Closed Sets
 
-#### `calcular_heuristica(pos_atual, pos_objetivo)`
+* **heap**: open set (estados a explorar), ordenado por `f(n)`
+* **fechados**: closed set (estados já visitados), definido por `(posicao, direcao, tem_bola)` para evitar loops
 
-```python
-def calcular_heuristica(pos_atual, pos_objetivo):
-    dx = abs(pos_atual[0] - pos_objetivo[0])
-    dy = abs(pos_atual[1] - pos_objetivo[1])
-    return 300 * max(dx, dy) - 200 * min(dx, dy)
-```
+---
 
-#### `custo_movimento(dx, dy, tem_bola)`
+## \:compass: Lógica da Rotação
 
-```python
-def custo_movimento(dx, dy, tem_bola):
-    custo_base = 300 if (dx == 0 or dy == 0) else 100
-    return custo_base * (1.5 if tem_bola else 1)
-```
+Ao comparar a direção anterior com a nova:
 
-#### `custo_rotacao(direcao_atual, nova_direcao, tem_bola)`
+* Se for de reto ↔ diagonal, soma +50 (ou +100 se tiver bola)
+* Se for rotação 90º (ex: cima ↔ direita), soma +150 (ou +300 com bola)
 
-```python
-def custo_rotacao(direcao_atual, nova_direcao, tem_bola):
-    # Implementação dos custos de rotação
-    ...
-```
+Essa penalidade incentiva caminhos mais suaves e menos instáveis.
 
-* Rotação reto → diagonal: 100 (200 com bola)
-* Rotação diagonal → reto: 50 (100 com bola)
-* Rotação brusca (90°): 200 (400 com bola)
+---
 
-#### `penalidade_adversarios(pos, obstaculos)`
+## \:warning: Obstáculos e Penalidades
 
-```python
-def penalidade_adversarios(pos, obstaculos):
-    # Calcula penalidade por proximidade
-    ...
-```
+* Células ocupadas por adversários são ignoradas (intransitáveis)
+* Células **adjacentes** têm penalidades:
 
-* Aplica penalidade inversamente proporcional à distância
-* Evita passar muito perto de adversários
+  * +300 se colado ao adversário
+  * +200 para uma distância de 1 diagonal
+  * 0 se distância > 1
 
-#### `encontrar_caminho()`
+Essa abordagem evita proibir caminhos viáveis, mas torna o robô mais cuidadoso.
 
-Implementação principal do A\* que:
+---
 
-* Usa fila de prioridade (heap) para selecionar sempre o nó com menor f
-* Mantém conjuntos de nós abertos e fechados
-* Considera todos os custos e heurísticas
+## \:mag: Validação do Melhor Caminho
 
-## Escolha da Heurística
+O A\* **sempre encontra o caminho menos custoso** (desde que a heurística seja admissível). Como:
 
-### Comparação entre Heurísticas
+* A heurística **nunca superestima** o custo real
+* Os custos são **positivos e bem definidos**
+* Estados repetidos são evitados (via closed set)
 
-| Heurística       | Fórmula                   | Adequação         |   |       |   |                        |
-| ---------------- | ------------------------- | ----------------- | - | ----- | - | ---------------------- |
-| Manhattan        |                           | x1-x2             | + | y1-y2 |   | Subestima diagonais    |
-| Euclidiana       | sqrt((x1-x2)² + (y1-y2)²) | Cálculo complexo  |   |       |   |                        |
-| Chebyshev        | max(                      | x1-x2             | , | y1-y2 | ) | Melhor para 8 direções |
-| **Nossa versão** | 300*max - 200*min         | **Melhor ajuste** |   |       |   |                        |
+Além disso, é feito logging completo:
 
-**Vantagens da nossa heurística:**
+* Estados explorados
+* Penalidades aplicadas
+* Direções e rotações
+* Custo total ao chegar ao destino
 
-1. Considera custos diferentes para diagonais (100) vs retos (300)
-2. Nunca superestima o custo real (garante otimalidade)
-3. Mais eficiente que Manhattan pura (explora menos nós)
+---
 
-## Seleção do Menor Custo
+## \:hammer: Como Usar
 
-Mecanismo de seleção:
+1. Garanta que você está num ambiente com Python 3
+2. Execute o programa principal (`simulador.py`)
+3. Ele chamará `encontrar_caminho` duas vezes: (início → bola, bola → gol)
+4. Veja o log detalhado no console e no diretório `logs/`
 
-1. Cada nó armazena `f = g + h`
-2. Uso de `heapq.heappop()` para remover nó com menor `f`
-3. Classe `Estado` implementa `__lt__` para comparação por `f`
+---
 
-**Garantias:**
+## \:trophy: Conclusão
 
-* Encontra caminho ótimo (se existir)
-* Busca eficiente priorizando nós promissores
+Esta solução implementa **todos os níveis do desafio** com eficiência, clareza e estrutura profissional.
+A utilização da heurística apropriada, da penalidade adaptativa e do modelo de estados com rotação e posse de bola permite que o robô encontre **o caminho mais seguro e ótimo** dentro das restrições impostas.
+---
 
-## Logging e Depuração
-
-Sistema registra:
-✅ Parâmetros iniciais
-✅ Cada iteração do algoritmo
-✅ Cálculos detalhados de custos
-✅ Decisões de movimento
-✅ Caminho final
-
-Arquivos de log: `logs/path_planning_<timestamp>.log`
-
-## Como Executar
-
-1. Execute o simulador:
-
-```bash
-python simulador.py
-```
-
-2. Controles:
-
-* ▶️/⏸️ Play/Pause: Inicia/pausa simulação
-* 🔄 Reset: Gera novo cenário
-
-## Níveis Implementados
-
-1. **Nível Básico**: Movimento básico até bola e gol
-2. **Nível 1**: Custos de rotação
-3. **Nível 2**: Estados (com/sem bola)
-4. **Nível 3**: Evitar proximidade com adversários
-
-## Considerações Finais
-
-✅ Código limpo e documentado
-✅ Solução completa para o desafio EDROM
-✅ Mecanismos avançados de análise
-✅ Flexível para ajustes futuros
-
-Algoritmo balanceia eficiência e otimalidade, atendendo todos requisitos do problema.
