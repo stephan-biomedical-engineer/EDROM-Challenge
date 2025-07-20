@@ -59,7 +59,8 @@ def desenhar_botao(tela, fonte, rect, texto, cor_fundo, cor_texto):
 # Lógica
 def resetar_cenario():
     # Posições fixas
-    pos_robo = (2, ALTURA_GRID // 2)
+    # pos_robo = (2, ALTURA_GRID // 2)
+    pos_robo = (random.randint(0,2), random.randint(0, ALTURA_GRID - 1))
     pos_gol = (LARGURA_GRID - 1, ALTURA_GRID // 2)
 
     # Posição da Bola
@@ -71,7 +72,7 @@ def resetar_cenario():
             break
 
     # Posição dos Adversários (Obstaculos)
-    MAX_OBSTACULOS = 20
+    MAX_OBSTACULOS = 50
     obstaculos = []
     posicoes_ocupadas = {pos_robo, pos_gol, pos_bola}
     
@@ -109,13 +110,13 @@ def main():
     clock = pygame.time.Clock()
     fonte_botao = pygame.font.Font(None, 28)
     
-    try:
-        icone_imagem = pygame.image.load("icone_edrom.png")
-        pygame.display.set_icon(icone_imagem)
-        icone_painel = pygame.transform.scale(icone_imagem, (40, 40))
-    except pygame.error as e:
-        print(f"Não foi possível carregar a imagem 'icone_edrom.png': {e}")
-        icone_painel = pygame.Surface((40, 40), pygame.SRCALPHA)
+    # try:
+    #     icone_imagem = pygame.image.load("icone_edrom.png")
+    #     pygame.display.set_icon(icone_imagem)
+    #     icone_painel = pygame.transform.scale(icone_imagem, (40, 40))
+    # except pygame.error as e:
+    #     print(f"Não foi possível carregar a imagem 'icone_edrom.png': {e}")
+    icone_painel = pygame.Surface((40, 40), pygame.SRCALPHA)
     
     botao_play_pause = pygame.Rect(20, ALTURA_TELA - ALTURA_PAINEL + 10, 120, 40)
     botao_reset = pygame.Rect(160, ALTURA_TELA - ALTURA_PAINEL + 10, 120, 40)
