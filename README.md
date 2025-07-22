@@ -106,18 +106,13 @@ Essa penalidade incentiva caminhos mais suaves e menos instáveis.
 
 ---
 
-## \:warning: Obstáculos e Penalidades
-
-* Células ocupadas por adversários são ignoradas (intransitáveis)
-* Células **adjacentes** têm penalidades:
-
-  * +300 se colado ao adversário
-  * +200 para uma distância de 1 diagonal
-  * 0 se distância > 1
-
-Essa abordagem evita proibir caminhos viáveis, mas torna o robô mais cuidadoso.
-
----
+### ⚙️ Mecanismo de Penalidades
+```python
+if dist <= 2:
+    penalidade += (300 - 100*dist) if dist <= 1 else (100 - 30*(dist-1))
+```
+- **Zona de influência ampliada**: 2 células
+- **Gradiente suave**: Penalidade decrescente com distância
 
 ## \:mag: Validação do Melhor Caminho
 
@@ -136,18 +131,35 @@ Além disso, é feito logging completo:
 
 ---
 
-## \:hammer: Como Usar
+## 📊 Logs Detalhados
+Exemplo de saída:
+```log
+2025-07-21 21:52:35 [INFO]: Explorando estado: (3,6) | Custo: f=1350 (g=650, h=700)
+2025-07-21 21:52:35 [DEBUG]: Penalidade adversário: (4,7) próximo a (3,8) (dist=1): +200
+2025-07-21 21:52:35 [DEBUG]: Movimento válido: (1,1) -> (4,7) | Custo: 150 + Penalidade: 400
+```
+```python
+DEBUG_MODE = True  # Ativa logs detalhados
+```
+---
 
-1. Garanta que você está num ambiente com Python 3
-2. Execute o programa principal (`simulador.py`)
-3. Ele chamará `encontrar_caminho` duas vezes: (início → bola, bola → gol)
-4. Veja o log detalhado no console e no diretório `logs/`
+## 🚀 Funcionalidades Principais
+### Níveis Implementados
+| Nível | Descrição | Implementação |
+|-------|-----------|---------------|
+| **Básico** | Movimento reto (300) vs diagonal (100) | `calcular_custo_movimento()` |
+| **1** | Custo adicional por mudança de direção | `+50` (reto↔diagonal), `+150` (90°) |
+| **2** | Custo dobrado com posse de bola | `tem_bola` multiplica custos de rotação |
+| **3** | Penalidade por proximidade de adversários | `calcular_penalidade_adversarios()` |
 
 ---
 
-## \:trophy: Conclusão
+## ✅ Critérios Atendidos
+- **Eficiência**: Heap prioritário para open set
+- **Organização**: Código modularizado e documentado
+- **Níveis**: Todos implementados com ajustes finos
+- **Logs**: Detalhados e estruturados
 
-Esta solução implementa **todos os níveis do desafio** com eficiência, clareza e estrutura profissional.
-A utilização da heurística apropriada, da penalidade adaptativa e do modelo de estados com rotação e posse de bola permite que o robô encontre **o caminho mais seguro e ótimo** dentro das restrições impostas.
----
+
+
 
