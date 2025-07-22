@@ -6,7 +6,7 @@ Curso: **Engenharia Biomédica**
 
 ---
 
-## \:dart: Objetivo
+## Objetivo
 
 Este projeto implementa o algoritmo A\* para encontrar o **melhor caminho** que um robô deve seguir em um campo, considerando:
 
@@ -34,7 +34,7 @@ A fila de prioridade é gerenciada com `heapq`, que garante que o **estado com m
 
 ---
 
-## \:map: Regras do Desafio (Níveis de Resolução)
+## Regras do Desafio (Níveis de Resolução)
 
 ### Nível Básico
 
@@ -95,7 +95,7 @@ Cada posição no grid guarda:
 
 ---
 
-## \:compass: Lógica da Rotação
+## Lógica da Rotação
 
 Ao comparar a direção anterior com a nova:
 
@@ -143,7 +143,7 @@ DEBUG_MODE = True  # Ativa logs detalhados
 ```
 ---
 
-## 🚀 Funcionalidades Principais
+## Funcionalidades Principais
 ### Níveis Implementados
 | Nível | Descrição | Implementação |
 |-------|-----------|---------------|
