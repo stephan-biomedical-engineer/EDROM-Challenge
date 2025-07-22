@@ -2,6 +2,8 @@
 
 import pygame
 import sys
+# import test_geometria as candidato 
+# import test_a_star as candidato
 import candidato
 import random
 
@@ -61,7 +63,7 @@ def resetar_cenario():
     # Posições fixas
     # pos_robo = (2, ALTURA_GRID // 2)
     pos_robo = (random.randint(0,2), random.randint(0, ALTURA_GRID - 1))
-    pos_gol = (LARGURA_GRID - 1, ALTURA_GRID // 2)
+    pos_gol = (LARGURA_GRID - 1, random.randint(0,ALTURA_GRID - 1))
 
     # Posição da Bola
     while True:
