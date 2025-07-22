@@ -32,8 +32,8 @@ def configurar_logging():
 
 configurar_logging()
 
-DEBUG_MODE = True
-# DEBUG_MODE = False  # Mude para True para ativar logs detalhados
+# DEBUG_MODE = True
+DEBUG_MODE = False  # Mude para True para ativar logs detalhados
 logging.getLogger().setLevel(logging.DEBUG if DEBUG_MODE else logging.INFO)
 
 # ==================== DEFINIÇÃO DE CLASSES ====================
