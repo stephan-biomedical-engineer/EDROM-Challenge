@@ -18,7 +18,7 @@ def configurar_logging():
     os.makedirs(log_dir, exist_ok=True)
     
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    log_file = os.path.join(log_dir, f"path_planning_{timestamp}.log")
+    log_file = os.path.join(log_dir, f"path_finding_{timestamp}.log")
     
     logging.basicConfig(
         level=logging.INFO,
@@ -31,6 +31,10 @@ def configurar_logging():
     logging.info("Sistema de logging configurado")
 
 configurar_logging()
+
+DEBUG_MODE = True
+# DEBUG_MODE = False  # Mude para True para ativar logs detalhados
+logging.getLogger().setLevel(logging.DEBUG if DEBUG_MODE else logging.INFO)
 
 # ==================== DEFINIÇÃO DE CLASSES ====================
 class Estado:
@@ -55,7 +59,7 @@ class Estado:
         self.direcao_anterior = direcao_anterior
         self.tem_bola = tem_bola
         
-        logging.info(f"Novo estado criado - Posição: {posicao} | Custo: g={g}, h={h}, f={self.f} | "
+        logging.debug(f"Novo estado criado - Posição: {posicao} | Custo: g={g}, h={h}, f={self.f} | "
                      f"Direção: {direcao_anterior} | Bola: {'Sim' if tem_bola else 'Não'}")
 
     def __lt__(self, other):
@@ -89,18 +93,19 @@ def calcular_custo_movimento(direcao_atual, nova_direcao, tem_bola):
         Custo total do movimento
     """
     # Custo base conforme especificação do desafio
-    custo = 100 if (nova_direcao[0] != 0 and nova_direcao[1] != 0) else 300
+    # custo = 100 if (nova_direcao[0] != 0 and nova_direcao[1] != 0) else 300
+    custo = 100
     
     # Aplica custo adicional para mudanças de direção
     if direcao_atual and direcao_atual != nova_direcao:
         # Mudança entre movimento reto e diagonal
         if (abs(direcao_atual[0]) + abs(direcao_atual[1])) != (abs(nova_direcao[0]) + abs(nova_direcao[1])):
             custo += 50 * (2 if tem_bola else 1)  # Nível 1 e 2
-            logging.info(f"Custo de rotação reto/diagonal: {'com bola' if tem_bola else 'sem bola'}")
+            logging.debug(f"Custo de rotação reto/diagonal: {'com bola' if tem_bola else 'sem bola'}")
         # Mudança brusca (90 graus)
         elif direcao_atual[0] * nova_direcao[0] + direcao_atual[1] * nova_direcao[1] == 0:
             custo += 150 * (2 if tem_bola else 1)  # Nível 1 e 2
-            logging.info(f"Custo de rotação 90°: {'com bola' if tem_bola else 'sem bola'}")
+            logging.debug(f"Custo de rotação 90°: {'com bola' if tem_bola else 'sem bola'}")
     
     return custo
 
@@ -115,12 +120,10 @@ def calcular_penalidade_adversarios(posicao, obstaculos):
     """
     penalidade = 0
     for obs in obstaculos:
-        # Usa distância de Chebyshev (melhor para movimentos diagonais)
         dist = max(abs(posicao[0]-obs[0]), abs(posicao[1]-obs[1]))
-        if dist <= 1:  # Apenas para células adjacentes
-            penalidade += 300 - 100 * dist  # Penalidade decrescente com distância
-            logging.info(f"Penalidade adversário: {posicao} próximo a {obs} (dist={dist})")
-    
+        if dist <= 2:  # Células adjacentes e diagonais secundárias
+            penalidade += (300 - 100 * dist) if dist <= 1 else (100 - 30 * (dist-1))
+            logging.debug(f"Penalidade adversário: {posicao} próximo a {obs} (dist={dist}): +{penalidade}")
     return penalidade
 
 # ==================== ALGORITMO PRINCIPAL ====================
@@ -197,11 +200,11 @@ def encontrar_caminho(pos_inicial, pos_objetivo, obstaculos, largura_grid, altur
             
             # Verifica se a nova posição é válida
             if not (0 <= nova_pos[0] < largura_grid and 0 <= nova_pos[1] < altura_grid):
-                logging.info(f"Posição inválida: {nova_pos} (fora do grid)")
+                logging.debug(f"Posição inválida: {nova_pos} (fora do grid)")
                 continue
                 
             if nova_pos in obstaculos:
-                logging.info(f"Posição inválida: {nova_pos} (obstáculo)")
+                logging.debug(f"Posição inválida: {nova_pos} (obstáculo)")
                 continue
 
             # Calcula os custos do movimento
@@ -229,7 +232,7 @@ def encontrar_caminho(pos_inicial, pos_objetivo, obstaculos, largura_grid, altur
             
             # Adiciona à fila de prioridade
             heapq.heappush(heap, novo_estado)
-            logging.info(f"Movimento válido: {movimento} -> {nova_pos} | Custo: {custo_mov} + Penalidade: {penalidade}")
+            logging.debug(f"Movimento válido: {movimento} -> {nova_pos} | Custo: {custo_mov} + Penalidade: {penalidade}")
 
     logging.warning("Nenhum caminho válido encontrado!")
     return []
